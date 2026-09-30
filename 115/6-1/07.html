@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第七課 明智的抉擇｜115 學年度 六上國語課文心智圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;600;700&family=Noto+Serif+TC:wght@400;600;700&family=Huninn&family=Iansui&display=swap" rel="stylesheet">
+<style>
+  :root { --font: "LXGW WenKai TC", "Kaiti TC", serif; --bg: #FAF8F4; --ui: #FFFFFF; --ui-text: #2B2F36; --ui-line: #E3E0DA; --ui-accent: #243047; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+  body { font-family: "PingFang TC", "Noto Sans TC", system-ui, sans-serif; color: var(--ui-text); }
+
+  #viewport { position: fixed; inset: 0; overflow: hidden; touch-action: none; cursor: grab; }
+  #viewport.dragging { cursor: grabbing; }
+  #stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #lines { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; }
+  #nodes { position: absolute; left: 0; top: 0; }
+
+  .node { position: absolute; left: 0; top: 0; width: max-content; font-family: var(--font); line-height: 1.35;
+          cursor: pointer; user-select: none; -webkit-user-select: none; overflow-wrap: anywhere; outline: none; }
+  .node:focus-visible { box-shadow: 0 0 0 3px var(--ui-accent); }
+  .node .t { display: block; }
+  .node .s { display: block; font-size: .6em; font-weight: 400; opacity: .88; margin-top: .15em; }
+  .root { padding: .42em .95em .5em; border-radius: 18px; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+  .l1 { padding: .38em .85em .45em; border-radius: 13px; box-shadow: 0 4px 12px rgba(0,0,0,.13); }
+  .l2 { padding: .3em .72em .36em; border-radius: 10px; border: 2px solid; }
+  .leaf { padding: .12em .3em .28em; border-bottom: 2px solid; }
+  .leaf.d4 { border-bottom-width: 1.5px; }
+  .side-l { text-align: right; }
+  .root.side-l { text-align: center; }
+
+  .tog { position: absolute; top: 50%; right: -10px; width: 20px; height: 20px; margin-top: -10px; padding: 0;
+         border-radius: 50%; border: 2px solid; font: 700 11px/1 system-ui, sans-serif; display: grid; place-items: center;
+         cursor: pointer; opacity: .55; transition: opacity .15s; }
+  .node:hover .tog, .tog.closed, .tog:focus-visible { opacity: 1; }
+  .side-l .tog { right: auto; left: -10px; }
+  .leaf .tog { top: auto; bottom: -10px; margin-top: 0; }
+  .rel { position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none; font-family: var(--font);
+         padding: .12em .7em .18em; border-radius: 999px; border: 1.5px dashed; }
+
+  #toolbar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 6px 14px;
+             align-items: center; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px);
+             padding: 8px 12px; background: var(--ui); border: 1px solid var(--ui-line); border-radius: 14px;
+             box-shadow: 0 6px 20px rgba(0,0,0,.10); font-size: 13px; }
+  .grp { display: flex; align-items: center; gap: 6px; }
+  .lbl { color: #6B6F76; font-size: 12px; }
+  .seg { display: flex; background: #F1EFEA; border-radius: 9px; padding: 2px; }
+  #toolbar button { border: 0; background: transparent; color: var(--ui-text); padding: 5px 9px; border-radius: 7px;
+                    font: inherit; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  #toolbar button:hover { background: #E6E3DD; }
+  #toolbar button[aria-pressed="true"] { background: var(--ui-accent); color: #fff; }
+  #toolbar .plain { background: #F1EFEA; }
+  .dots { display: inline-flex; gap: 2px; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+  #scaleOut { min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+  #hint { position: fixed; left: 14px; bottom: 12px; z-index: 5; font-size: 12px; color: #6B6F76; background: var(--ui);
+          border: 1px solid var(--ui-line); padding: 5px 10px; border-radius: 9px; opacity: .92; }
+
+  #toolbar a { color: var(--ui-text); text-decoration: none; padding: 5px 9px; border-radius: 7px; background: #F1EFEA; white-space: nowrap; }
+  #toolbar a:hover { background: #E6E3DD; }
+  #toolbar.min > .grp:not(.keep), #toolbar .only-min, #toolbar.min .hide-min { display: none; }
+  #toolbar.min .only-min { display: flex; }
+  body.export #toolbar, body.export #hint, body.export .tog { display: none !important; }
+  body.export #viewport { cursor: default; }
+
+  @media (max-width: 760px) {
+    #toolbar { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; left: 8px; right: 8px; transform: none; max-width: none; }
+    #hint { display: none; }
+  }
+  @media print {
+    @page { size: A4 landscape; margin: 8mm; }
+    #toolbar, #hint, .tog { display: none !important; }
+    html, body { background: var(--bg) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    #viewport { position: absolute; width: 281mm; height: 194mm; }
+    .root, .l1 { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div id="toolbar" role="toolbar" aria-label="心智圖設定"></div>
+<div id="viewport"><div id="stage"><svg id="lines" xmlns="http://www.w3.org/2000/svg"></svg><div id="nodes"></div></div></div>
+<div id="hint">拖曳移動｜捏合或 Ctrl＋滾輪縮放｜點主題展開／收合</div>
+<script>window.MINDMAP = {"root": {"text": "第七課 明智的抉擇\n議論文｜王溢嘉", "children": [{"text": "提出問題（開頭）", "children": [{"text": "人生不只一個目標", "children": [{"text": "人生有很多面向"}, {"text": "我們有各種潛能及才藝"}]}, {"text": "好處：多重目標讓生活多采多姿"}, {"text": "壞處：每個目標都想達到，勞心又費力", "children": [{"text": "最後可能全都做不好"}]}, {"text": "提問：要如何做出明智的抉擇？", "id": "q", "links": [{"to": "a1", "label": "提問與回答"}]}]}, {"text": "例子一：爺爺教少年燒開水", "children": [{"text": "少年的計畫（爺爺連聲讚許「很好！很好！」）", "children": [{"text": "學校功課外，還有心算班"}, {"text": "星期六學跆拳道，星期日學鋼琴"}, {"text": "抽空看自然科學叢書，打算三個月看完"}]}, {"text": "燒水遇到的難題", "children": [{"text": "大水壺裝滿水，灶內木柴剩很少"}, {"text": "木柴不可能將一大壺水燒開"}, {"text": "去撿枯枝，水燒到一半就冷了"}]}, {"text": "解決辦法", "children": [{"text": "少年：「我們把水倒掉一半，就能用這些柴火把水燒開。」"}, {"text": "爺爺：「這就對了！」"}]}, {"text": "爺爺的比喻", "children": [{"text": "目標太多 → 水壺裡裝太多的水"}, {"text": "時間和才情有限 → 有限的柴火"}, {"text": "水多柴少難燒開 → 減少目標的量", "id": "w1", "links": [{"to": "w2", "label": "減量才成功"}]}]}]}, {"text": "例子二：種花與養盆栽", "children": [{"text": "養盆栽要留意：土壤、水分、日照"}, {"text": "前提：養分有限，先想清楚要種成什麼樣"}, {"text": "想花朵開得又大又美", "children": [{"text": "摘除一些不大理想的花苞", "id": "p1", "links": [{"to": "w1", "label": "同樣要取捨"}]}, {"text": "只保留幾個較好的，得到更多養分"}]}, {"text": "想種成一簇繁花", "children": [{"text": "適時修剪雜枝"}, {"text": "爭取更多空間生長新芽"}]}, {"text": "連結到抉擇", "children": [{"text": "衡量自己的時間和能力"}, {"text": "依設定的目標，心力優先放在最重要的事"}]}]}, {"text": "論證方法與句型", "children": [{"text": "舉例論證：燒開水、養盆栽兩個例子"}, {"text": "類比：水壺與柴火 → 目標與時間、才情"}, {"text": "引用俗語：「貪多嚼不爛。」"}, {"text": "設問：開頭提問，結尾回答"}, {"text": "整理歸納：「換句話說，水多柴少難燒開」"}, {"text": "句型", "children": [{"text": "若＿＿，就＿＿。", "children": [{"text": "若想花朵開得又大又美，就要摘除一些不大理想的花苞"}]}, {"text": "＿＿就好像＿＿。", "children": [{"text": "目標太多就好像水壺裡裝太多的水"}]}]}]}, {"text": "結論與主旨", "children": [{"text": "質與量無法兼顧時", "children": [{"text": "要維持或提高品質，首先就必須犧牲「量」", "id": "w2"}]}, {"text": "做出明智抉擇的步驟", "children": [{"text": "確定目標 → 依輕重緩急 → 投入適當的時間及心力", "id": "a1"}]}, {"text": "主旨（整理）：目標要有取捨，才能做好最重要的事"}]}, {"text": "重要語詞（整理）", "fold": true, "children": [{"text": "抉擇"}, {"text": "面向"}, {"text": "潛能"}, {"text": "才藝"}, {"text": "多采多姿"}, {"text": "勞心又費力"}, {"text": "興高采烈"}, {"text": "步履蹣跚"}, {"text": "意味深長"}, {"text": "疑慮"}, {"text": "衡量"}, {"text": "輕重緩急"}, {"text": "貪多嚼不爛"}, {"text": "兼顧"}, {"text": "犧牲"}]}]}, "downloads": {"png": "07.png", "pdf": "07.pdf"}, "home": "../index.html#c-6-1"};</script>
+<script>
+(() => {
+  const DATA = window.MINDMAP;
+  const $ = (s) => document.querySelector(s);
+  const viewport = $('#viewport'), stage = $('#stage'), svg = $('#lines'), layer = $('#nodes');
+
+  const THEMES = {
+    vivid:    { name: '繽紛', bg: '#FAF8F4', root: '#243047', text: '#1F2328', link: '#6B7280', tint: .87, boost: 1,
+                branches: ['#E4572E', '#17A06B', '#2F6FDB', '#8A4FD6', '#C2255C', '#B8860B'] },
+    fresh:    { name: '清新', bg: '#F1F7F5', root: '#0B5D57', text: '#1D2B29', link: '#5F7A75', tint: .88, boost: 1,
+                branches: ['#0E9F8F', '#5E9E2C', '#1582B8', '#E2742B', '#B24C9C', '#C9901A'] },
+    muted:    { name: '莫蘭迪', bg: '#F3EFE9', root: '#4B4655', text: '#2E2A33', link: '#8A8290', tint: .84, boost: 1,
+                branches: ['#B86F62', '#6F8F74', '#627FA0', '#8E77A6', '#B08D52', '#A36F84'] },
+    contrast: { name: '高對比', bg: '#000000', root: '#FFE14D', text: '#FFFFFF', link: '#FFFFFF', tint: .8, boost: 1.45,
+                branches: ['#FFE14D', '#52E5FF', '#FF8AE2', '#9DFF6E', '#FFB35C', '#C3A6FF'] },
+  };
+  const FONTS = {
+    kai:    { name: '楷體', css: '"LXGW WenKai TC", "Kaiti TC", "BiauKai", "DFKai-SB", serif' },
+    hei:    { name: '黑體', css: '"Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif' },
+    yuan:   { name: '圓體', css: '"Huninn", "Yuanti TC", "PingFang TC", sans-serif' },
+    song:   { name: '明體', css: '"Noto Serif TC", "Songti TC", "PMingLiU", serif' },
+    iansui: { name: '芫荽', css: '"Iansui", "Kaiti TC", serif' },
+  };
+  const LAYOUTS = { balanced: '左右開展', right: '向右展開' };
+  // 級距：中心主題 → 分支 → 子主題 → 細節
+  const LEVELS = [
+    { size: 30, weight: 700, maxW: 380 },
+    { size: 21, weight: 700, maxW: 330 },
+    { size: 16.5, weight: 600, maxW: 340 },
+    { size: 15, weight: 400, maxW: 340 },
+    { size: 14, weight: 400, maxW: 340 },
+  ];
+  const HGAP = [0, 76, 46, 30, 26];
+  const VGAP = [0, 34, 14, 8, 5];
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('mindmap:' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem('mindmap:' + k, JSON.stringify(v)); } catch { /* 無痕模式等情況就不記 */ } },
+  };
+  const state = {
+    theme: store.get('theme', 'vivid'), font: store.get('font', 'kai'), scale: store.get('scale', 1),
+    layout: store.get('layout', 'balanced'), links: store.get('links', true),
+  };
+  // 網址參數可以指定樣式（?theme=contrast&font=yuan&layout=right），匯出時用 ?export=png|pdf
+  const Q = new URLSearchParams(location.search);
+  const EXPORT = ['png', 'pdf'].includes(Q.get('export')) ? Q.get('export') : null;
+  for (const k of ['theme', 'font', 'layout']) if (Q.get(k)) state[k] = Q.get(k);
+  if (EXPORT) { document.body.classList.add('export'); state.links = true; state.scale = 1; }
+  if (!THEMES[state.theme]) state.theme = 'vivid';
+  if (!FONTS[state.font]) state.font = 'kai';
+  if (!LAYOUTS[state.layout]) state.layout = 'balanced';
+  if (!(state.scale >= .7 && state.scale <= 1.8)) state.scale = 1;
+
+  // ---- 色彩工具 ----
+  const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => '#' + rgb(a).map((v, i) => Math.round(v * (1 - t) + rgb(b)[i] * t).toString(16).padStart(2, '0')).join('');
+  const lum = (h) => { const [r, g, b] = rgb(h).map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+  const onColor = (h) => { const L = lum(h); return (1.05 / (L + .05)) >= ((L + .05) / .05) ? '#FFFFFF' : '#111111'; };
+
+  // ---- 建立節點 ----
+  const nodes = [], byId = {};
+  (function build(d, parent, depth, branch) {
+    const n = { d, parent, depth, branch, children: [], collapsed: !!d.fold && depth > 0 };
+    nodes.push(n);
+    if (d.id) byId[d.id] = n;
+    (d.children || []).forEach((c, i) => n.children.push(build(c, n, depth + 1, depth === 0 ? i : branch)));
+    return n;
+  })(DATA.root, null, 0, -1);
+  const root = nodes[0];
+  const descCount = (n) => n.children.reduce((s, c) => s + 1 + descCount(c), 0);
+  const visible = (n) => { for (let p = n.parent; p; p = p.parent) if (p.collapsed) return false; return true; };
+  const openKids = (n) => (n.collapsed ? [] : n.children);
+
+  let moved = false;
+  for (const n of nodes) {
+    const el = document.createElement('div');
+    el.className = 'node ' + (n.depth === 0 ? 'root' : n.depth === 1 ? 'l1' : n.depth === 2 ? 'l2' : 'leaf d' + Math.min(n.depth, 4));
+    const [main, ...rest] = n.d.text.split('\n');
+    const t = document.createElement('span'); t.className = 't'; t.textContent = main; el.append(t);
+    if (rest.length) { const s = document.createElement('span'); s.className = 's'; s.textContent = rest.join('　'); el.append(s); }
+    if (n.children.length && n.depth > 0) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tog';
+      b.addEventListener('click', (e) => { e.stopPropagation(); toggle(n); });
+      el.append(b); n.tog = b;
+      el.tabIndex = 0;
+      el.setAttribute('role', 'button');
+      el.addEventListener('click', () => { if (!moved) toggle(n); });
+      el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(n); } });
+    }
+    n.el = el;
+    layer.append(el);
+  }
+
+  // ---- 樣式 ----
+  const theme = () => THEMES[state.theme];
+  const colorOf = (n) => { const B = theme().branches; return n.depth === 0 ? theme().root : B[n.branch % B.length]; };
+
+  function assignSides() {
+    const k = root.children.length;
+    const right = state.layout === 'right' ? k : Math.ceil(k / 2);
+    const set = (n, s) => { n.side = s; n.children.forEach((c) => set(c, s)); };
+    root.side = 1;
+    root.children.forEach((c, i) => set(c, i < right ? 1 : -1));
+  }
+
+  function applyStyle() {
+    const T = theme(), S = state.scale;
+    document.documentElement.style.setProperty('--font', FONTS[state.font].css);
+    document.documentElement.style.setProperty('--bg', T.bg);
+    for (const n of nodes) {
+      const L = LEVELS[Math.min(n.depth, 4)], el = n.el, c = colorOf(n), st = el.style;
+      st.fontSize = (L.size * S) + 'px';
+      st.fontWeight = L.weight;
+      st.maxWidth = (L.maxW * S) + 'px';
+      el.classList.toggle('side-l', n.side < 0);
+      if (n.depth <= 1) { st.background = c; st.color = onColor(c); }
+      else if (n.depth === 2) { st.background = mix(c, T.bg, T.tint); st.borderColor = c; st.color = T.text; }
+      else { st.background = 'transparent'; st.borderColor = c; st.color = T.text; }
+      if (n.tog) {
+        const closed = n.collapsed, tg = n.tog;
+        tg.classList.toggle('closed', closed);
+        tg.textContent = closed ? String(descCount(n)) : '−';
+        tg.setAttribute('aria-label', closed ? '展開' : '收合');
+        tg.style.borderColor = c;
+        tg.style.background = closed ? c : T.bg;
+        tg.style.color = closed ? onColor(c) : c;
+        el.setAttribute('aria-expanded', String(!closed));
+      }
+    }
+  }
+
+  // ---- 版面計算 ----
+  function layout() {
+    const S = state.scale;
+    for (const n of nodes) { n.vis = visible(n); n.el.style.display = n.vis ? '' : 'none'; }
+    for (const n of nodes) if (n.vis) { n.w = n.el.offsetWidth; n.h = n.el.offsetHeight; }
+    const extent = (n) => {
+      const kids = openKids(n);
+      if (!kids.length) return (n.sh = n.h);
+      let sum = 0;
+      for (const c of kids) sum += extent(c);
+      sum += VGAP[Math.min(n.depth + 1, 4)] * S * (kids.length - 1);
+      return (n.sh = Math.max(n.h, sum));
+    };
+    const place = (n, kids, side) => {
+      if (!kids.length) return;
+      const gap = VGAP[Math.min(n.depth + 1, 4)] * S, hg = HGAP[Math.min(n.depth + 1, 4)] * S;
+      let total = kids.reduce((s, c) => s + c.sh, 0) + gap * (kids.length - 1);
+      let y = n.cy - total / 2;
+      for (const c of kids) {
+        c.cy = y + c.sh / 2;
+        c.x = side > 0 ? n.x + n.w + hg : n.x - hg - c.w;
+        c.y = c.cy - c.h / 2;
+        y += c.sh + gap;
+        place(c, openKids(c), side);
+      }
+    };
+    root.children.forEach(extent);
+    root.x = -root.w / 2; root.cy = 0; root.y = -root.h / 2;
+    place(root, root.children.filter((c) => c.side > 0), 1);
+    place(root, root.children.filter((c) => c.side < 0).reverse(), -1); // 左側照 XMind 順時針：由下往上
+    for (const n of nodes) if (n.vis) n.el.style.transform = `translate(${n.x}px, ${n.y}px)`;
+    draw();
+  }
+
+  // ---- 線條 ----
+  const outPt = (n, s) => n.depth === 0 ? { x: n.x + n.w / 2 + s * n.w * .22, y: n.cy }
+    : { x: s > 0 ? n.x + n.w : n.x, y: n.depth >= 3 ? n.y + n.h : n.cy };
+  const inPt = (c, s) => ({ x: s > 0 ? c.x : c.x + c.w, y: c.depth >= 3 ? c.y + c.h : c.cy });
+  const curve = (a, b) => { const m = (b.x - a.x) / 2; return `M${a.x},${a.y} C${a.x + m},${a.y} ${b.x - m},${b.y} ${b.x},${b.y}`; };
+  const taper = (a, b, w1, w2) => {
+    const m = (b.x - a.x) / 2;
+    return `M${a.x},${a.y - w1 / 2} C${a.x + m},${a.y - w1 / 2} ${b.x - m},${b.y - w2 / 2} ${b.x},${b.y - w2 / 2}`
+      + ` L${b.x},${b.y + w2 / 2} C${b.x - m},${b.y + w2 / 2} ${a.x + m},${a.y + w1 / 2} ${a.x},${a.y + w1 / 2} Z`;
+  };
+  const clip = (n, to) => {
+    const cx = n.x + n.w / 2, cy = n.cy, dx = to.x - cx, dy = to.y - cy;
+    const k = Math.min(Math.abs((n.w / 2 + 4) / (dx || 1e-6)), Math.abs((n.h / 2 + 4) / (dy || 1e-6)));
+    return { x: cx + dx * k, y: cy + dy * k };
+  };
+
+  function draw() {
+    const T = theme(), S = state.scale, K = T.boost;
+    let out = `<defs><marker id="arr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">`
+      + `<path d="M0,0 L10,5 L0,10 z" fill="${T.link}"/></marker></defs>`;
+    for (const n of nodes) {
+      if (!n.vis) continue;
+      for (const c of openKids(n)) {
+        const a = outPt(n, c.side), b = inPt(c, c.side), col = colorOf(c);
+        if (n.depth === 0) out += `<path d="${taper(a, b, 9 * S * K, 3 * S * K)}" fill="${col}"/>`;
+        else {
+          const w = (n.depth === 1 ? 2.8 : n.depth === 2 ? 2 : 1.5) * S * K;
+          out += `<path d="${curve(a, b)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+        }
+      }
+    }
+    layer.querySelectorAll('.rel').forEach((e) => e.remove());
+    relBoxes.length = 0;
+    if (state.links) {
+      for (const n of nodes) {
+        for (const lk of n.d.links || []) {
+          const t = byId[lk.to];
+          if (!t || !n.vis || !t.vis) continue;
+          let p1, p2, c;
+          if (n.side === t.side) {
+            // 同一側：兩端從靠主幹的那一邊出發，往主幹方向繞，避開外側的文字
+            const s = n.side, edge = (m) => ({ x: s > 0 ? m.x - 4 : m.x + m.w + 4, y: m.cy });
+            const trunk = root.children.filter((b) => b.side === s && b.vis);
+            const lane = s > 0 ? Math.min(...trunk.map((b) => b.x)) - 22 * S : Math.max(...trunk.map((b) => b.x + b.w)) + 22 * S;
+            p1 = edge(n); p2 = edge(t);
+            c = { x: 2 * lane - (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+          } else {
+            // 跨左右兩側：往遠離中心的方向彎，少壓到中心主題
+            const ac = { x: n.x + n.w / 2, y: n.cy }, bc = { x: t.x + t.w / 2, y: t.cy };
+            p1 = clip(n, bc); p2 = clip(t, ac);
+            const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2, dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.hypot(dx, dy) || 1;
+            const off = Math.min(170, len * .28);
+            const c1 = { x: mx - dy / len * off, y: my + dx / len * off }, c2 = { x: mx + dy / len * off, y: my - dx / len * off };
+            c = Math.hypot(c1.x, c1.y) >= Math.hypot(c2.x, c2.y) ? c1 : c2;
+          }
+          out += `<path d="M${p1.x},${p1.y} Q${c.x},${c.y} ${p2.x},${p2.y}" fill="none" stroke="${T.link}" stroke-width="${1.6 * S * K}"`
+            + ` stroke-dasharray="${6 * S},${5 * S}" marker-end="url(#arr)"/>`;
+          if (lk.label) {
+            const lb = document.createElement('div');
+            lb.className = 'rel';
+            lb.textContent = lk.label;
+            Object.assign(lb.style, { fontSize: 12.5 * S + 'px', color: T.link, borderColor: T.link, background: T.bg });
+            const px = .25 * p1.x + .5 * c.x + .25 * p2.x, py = .25 * p1.y + .5 * c.y + .25 * p2.y;
+            layer.append(lb);
+            lb.style.transform = `translate(${px - lb.offsetWidth / 2}px, ${py - lb.offsetHeight / 2}px)`;
+            relBoxes.push({ x: px - lb.offsetWidth / 2, y: py - lb.offsetHeight / 2, w: lb.offsetWidth, h: lb.offsetHeight });
+          }
+        }
+      }
+    }
+    svg.innerHTML = out;
+  }
+
+  // ---- 視角（平移／縮放）----
+  const view = { x: 0, y: 0, s: 1 };
+  const applyView = () => { stage.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.s})`; };
+  const relBoxes = [];
+  function bbox() {
+    let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    for (const n of nodes) if (n.vis) { x1 = Math.min(x1, n.x); y1 = Math.min(y1, n.y); x2 = Math.max(x2, n.x + n.w); y2 = Math.max(y2, n.y + n.h); }
+    for (const r of relBoxes) { x1 = Math.min(x1, r.x); y1 = Math.min(y1, r.y); x2 = Math.max(x2, r.x + r.w); y2 = Math.max(y2, r.y + r.h); }
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+  function fitTo(W, H, top) {
+    const b = bbox(), pad = 28;
+    const s = Math.min((W - pad * 2) / b.w, (H - top - pad * 2) / b.h, 1.3);
+    view.s = s;
+    view.x = W / 2 - (b.x + b.w / 2) * s;
+    view.y = top + (H - top) / 2 - (b.y + b.h / 2) * s;
+    applyView();
+  }
+  const fit = () => fitTo(viewport.clientWidth, viewport.clientHeight, $('#toolbar').getBoundingClientRect().bottom);
+  function zoomAt(px, py, f) {
+    const ns = Math.min(4, Math.max(.15, view.s * f)), k = ns / view.s;
+    view.x = px - (px - view.x) * k; view.y = py - (py - view.y) * k; view.s = ns;
+    applyView();
+  }
+  const screenOf = (n) => ({ x: view.x + n.x * view.s, y: view.y + n.cy * view.s });
+
+  function toggle(n) {
+    const before = screenOf(n);
+    n.collapsed = !n.collapsed;
+    applyStyle(); layout();
+    const after = screenOf(n);
+    view.x += before.x - after.x; view.y += before.y - after.y;
+    applyView();
+  }
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * .01));
+    else { view.x -= e.deltaX; view.y -= e.deltaY; applyView(); }
+  }, { passive: false });
+
+  const pts = new Map();
+  let drag = null, pinch = null;
+  viewport.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.tog')) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    moved = false;
+    if (pts.size === 1) drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: view.s, vx: view.x, vy: view.y, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+      drag = null;
+    }
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (drag) {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) { moved = true; viewport.classList.add('dragging'); }
+      if (moved) { view.x = drag.vx + dx; view.y = drag.vy + dy; applyView(); }
+    } else if (pinch && pts.size === 2) {
+      moved = true;
+      const [a, b] = [...pts.values()];
+      const ns = Math.min(4, Math.max(.15, pinch.s * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d)), k = ns / pinch.s;
+      view.s = ns;
+      view.x = (a.x + b.x) / 2 - (pinch.cx - pinch.vx) * k;
+      view.y = (a.y + b.y) / 2 - (pinch.cy - pinch.vy) * k;
+      applyView();
+    }
+  });
+  const up = (e) => {
+    pts.delete(e.pointerId);
+    if (pts.size < 2) pinch = null;
+    if (!pts.size) { drag = null; viewport.classList.remove('dragging'); }
+  };
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+  window.addEventListener('resize', () => { if (!EXPORT) fit(); });
+
+  // ---- 工具列 ----
+  const tb = $('#toolbar');
+  const group = (label, ...kids) => { const g = document.createElement('div'); g.className = 'grp'; if (label) { const l = document.createElement('span'); l.className = 'lbl'; l.textContent = label; g.append(l); } g.append(...kids); tb.append(g); return g; };
+  const btn = (html, on, cls) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = html; if (cls) b.className = cls; b.addEventListener('click', on); return b; };
+  function seg(key, options, render, after) {
+    const s = document.createElement('div'); s.className = 'seg';
+    for (const [k, v] of Object.entries(options)) {
+      const b = btn('', () => { state[key] = k; store.set(key, k); sync(); after(); });
+      render(b, k, v); b.dataset.v = k; s.append(b);
+    }
+    s.dataset.key = key;
+    return s;
+  }
+  function sync() {
+    tb.querySelectorAll('.seg[data-key]').forEach((s) => s.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(state[s.dataset.key] === b.dataset.v))));
+    $('#scaleOut').textContent = Math.round(state.scale * 100) + '%';
+    linksBtn.setAttribute('aria-pressed', String(state.links));
+  }
+  const relayoutFit = () => { applyStyle(); layout(); fit(); settle(); };
+
+  group('版面', seg('layout', LAYOUTS, (b, k, v) => { b.textContent = v; }, () => { assignSides(); relayoutFit(); }));
+  group('配色', seg('theme', THEMES, (b, k, v) => {
+    b.innerHTML = `<span class="dots">${v.branches.slice(0, 3).map((c) => `<i style="background:${c}"></i>`).join('')}</span>${v.name}`;
+  }, () => { applyStyle(); draw(); }));
+  group('字體', seg('font', FONTS, (b, k, v) => { b.textContent = v.name; b.style.fontFamily = v.css; }, relayoutFit));
+  const scaleOut = document.createElement('output'); scaleOut.id = 'scaleOut';
+  const setScale = (d) => { state.scale = Math.round(Math.min(1.8, Math.max(.7, state.scale + d)) * 10) / 10; store.set('scale', state.scale); sync(); relayoutFit(); };
+  group('字級', btn('A−', () => setScale(-.1), 'plain'), scaleOut, btn('A＋', () => setScale(.1), 'plain'));
+  const lv = document.createElement('div'); lv.className = 'seg';
+  for (const [L, name] of [[1, '1'], [2, '2'], [3, '3'], [99, '全部']]) {
+    lv.append(btn(name, () => { for (const n of nodes) if (n.depth > 0 && n.children.length) n.collapsed = n.depth >= L; relayoutFit(); }));
+  }
+  group('展開層級', lv);
+  const linksBtn = btn('關聯線', () => { state.links = !state.links; store.set('links', state.links); sync(); draw(); });
+  group('', linksBtn, btn('置中', fit), btn('列印', () => window.print()));
+  const link = (text, href, dl) => { const a = document.createElement('a'); a.textContent = text; a.href = href; if (dl) a.setAttribute('download', ''); return a; };
+  if (DATA.downloads) group('下載', ...Object.entries(DATA.downloads).map(([k, href]) => link(k.toUpperCase(), href, true)));
+  if (DATA.home) tb.prepend(link('← 目錄', DATA.home));
+  // 投影上課時可以把工具列收成一顆按鈕
+  const setMin = (v) => { tb.classList.toggle('min', v); store.set('min', v); fit(); };
+  group('', btn('收起工具列', () => setMin(true))).classList.add('keep', 'hide-min');
+  group('', btn('設定 ▾', () => setMin(false))).classList.add('keep', 'only-min');
+  if (store.get('min', false)) tb.classList.add('min');
+
+  // ---- 列印：暫時縮放到 A4 橫向 ----
+  let saved = null;
+  window.addEventListener('beforeprint', () => { if (EXPORT) return; saved = { ...view }; fitTo(1062, 733, 0); });
+  window.addEventListener('afterprint', () => { if (saved) { Object.assign(view, saved); applyView(); saved = null; } });
+
+  // 網路字型是分批載入的，字到了尺寸會變，重新排一次
+  let pending = false;
+  function settle() {
+    if (!document.fonts) return;
+    document.fonts.ready.then(() => { if (!pending) { pending = true; requestAnimationFrame(() => { pending = false; layout(); }); } });
+  }
+  if (document.fonts) document.fonts.addEventListener('loadingdone', settle);
+
+  assignSides(); sync(); applyStyle(); layout(); fit();
+
+  async function fontsLoaded() {
+    if (!document.fonts) return;
+    const fam = FONTS[state.font].css.split(',')[0].trim();
+    const text = nodes.map((n) => n.d.text + (n.d.links || []).map((l) => l.label || '').join('')).join('') + '0123456789−';
+    await Promise.all([400, 600, 700].map((w) => document.fonts.load(`${w} 16px ${fam}`, text).catch(() => [])));
+    await document.fonts.ready;
+  }
+  window.__mindmapReady = (async () => {
+    if (EXPORT) { for (const n of nodes) n.collapsed = false; applyStyle(); } // 靜態檔沒辦法點開，全部展開
+    await fontsLoaded();
+    layout();
+    if (EXPORT === 'png') {
+      const b = bbox(), pad = 48;
+      view.s = 1; view.x = pad - b.x; view.y = pad - b.y; applyView();
+      window.__mindmapSize = { w: Math.ceil(b.w + pad * 2), h: Math.ceil(b.h + pad * 2) };
+    } else if (EXPORT === 'pdf') {
+      fitTo(1123, 794, 0); // A4 橫向（96 dpi）
+      window.__mindmapSize = { w: 1123, h: 794 };
+    } else fit();
+    return true;
+  })();
+})();
+</script>
+</body>
+</html>

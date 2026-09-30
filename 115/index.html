@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>115 學年度｜課文心智圖</title>
+<meta name="description" content="115 學年度課文心智圖入口：點課名打開該課的互動心智圖。">
+<style>
+  :root { --bg: #FAF8F4; --card: #FFFFFF; --text: #1F2328; --muted: #62666D; --line: #E3DFD7; --accent: #243047;
+          --accent-text: #FFFFFF; --hover: #F3F0EA; --chip: #EFECE6; --focus: #2F6FDB; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #15171B; --card: #1E2228; --text: #ECEAE6; --muted: #A3A7AE; --line: #30353D;
+      --accent: #DCE6FF; --accent-text: #15171B; --hover: #262B33; --chip: #2A2F37; --focus: #8FB2FF; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5;
+         font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .kicker { margin: 0; color: var(--muted); font-size: 15px; }
+  h1 { margin: 2px 0 4px; font-size: clamp(28px, 6vw, 38px); line-height: 1.2; }
+  .lead { margin: 0; color: var(--muted); font-size: 17px; }
+  .switch { flex: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--card);
+            color: var(--text); border-radius: 999px; padding: 7px 12px 7px 8px; font: inherit; font-size: 14px; cursor: pointer; }
+  .switch i { width: 34px; height: 20px; border-radius: 999px; background: var(--chip); position: relative; transition: background .15s; }
+  .switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+                     background: var(--muted); transition: transform .15s, background .15s; }
+  .switch[aria-pressed="true"] i { background: var(--accent); }
+  .switch[aria-pressed="true"] i::after { transform: translateX(14px); background: var(--accent-text); }
+  .teacher-only { display: none !important; }
+  body.teacher .teacher-only { display: flex !important; }
+
+  .shelf { margin-top: 14px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 18px; }
+  summary { list-style: none; display: flex; align-items: center; gap: 14px; padding: 16px 18px; cursor: pointer; border-radius: 18px; }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { background: var(--hover); }
+  .badge { flex: none; min-width: 64px; text-align: center; padding: 8px 12px; border-radius: 14px; background: var(--accent);
+            color: var(--accent-text); font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+  .stitle { flex: 1; display: flex; flex-direction: column; font-size: 20px; font-weight: 700; }
+  .stitle small { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .chev { width: 12px; height: 12px; border-right: 2.5px solid var(--muted); border-bottom: 2.5px solid var(--muted);
+           transform: rotate(45deg); margin: 0 6px 6px 0; transition: transform .15s; }
+  details[open] .chev { transform: rotate(225deg); margin: 6px 6px 0 0; }
+  .tools { flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 18px 10px 96px; }
+  .tools a, .tools button { font: inherit; font-size: 14px; border: 0; cursor: pointer; text-decoration: none; padding: 6px 12px;
+                             border-radius: 9px; background: var(--chip); color: var(--text); }
+  .tools .src { font-size: 13px; color: var(--muted); }
+  /* 課次清單：左側一條主幹線連到每一課，呼應心智圖的節點 */
+  .lessons { list-style: none; margin: 0; padding: 4px 14px 14px 50px; position: relative; }
+  .lessons::before { content: ""; position: absolute; left: 50px; top: 0; bottom: 38px; border-left: 2px solid var(--line); }
+  .lessons li { position: relative; display: flex; align-items: center; gap: 6px; }
+  .lessons li::before { content: ""; position: absolute; left: 0; top: 50%; width: 16px; border-top: 2px solid var(--line); }
+  .lesson { flex: 1; display: flex; align-items: center; gap: 12px; margin-left: 16px; padding: 10px 12px; min-height: 56px;
+             border-radius: 12px; text-decoration: none; }
+  .lesson:hover { background: var(--hover); }
+  .no { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700;
+         font-size: 16px; border: 2px solid var(--line); font-variant-numeric: tabular-nums; }
+  .txt { display: flex; flex-direction: column; }
+  .name { font-size: 19px; font-weight: 600; }
+  .sub { font-size: 14px; color: var(--muted); }
+  .dl { gap: 4px; }
+  .dl a { font-size: 13px; text-decoration: none; padding: 5px 9px; border-radius: 8px; background: var(--chip); }
+  footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+  dialog { border: 0; border-radius: 18px; padding: 24px; max-width: min(92vw, 460px); background: var(--card); color: var(--text); text-align: center; }
+  dialog::backdrop { background: rgba(0, 0, 0, .55); }
+  #qrImg { width: min(76vw, 380px); height: auto; image-rendering: pixelated; background: #fff; padding: 8px; border-radius: 10px; }
+  #qrLabel { font-size: 20px; font-weight: 700; margin: 12px 0 2px; }
+  #qrUrl { font-size: 13px; color: var(--muted); word-break: break-all; margin: 0 0 14px; }
+  dialog button { font: inherit; border: 0; border-radius: 10px; padding: 8px 20px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
+  @media (max-width: 560px) {
+    .wrap { padding-top: 20px; }
+    header { flex-direction: column; }
+    .badge { min-width: 54px; font-size: 20px; }
+    .tools { padding-left: 18px; }
+    .lessons { padding-left: 44px; padding-right: 8px; }
+    .lessons::before { left: 44px; }
+    .lesson { padding: 10px 6px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="kicker"><a href="../index.html">課文心智圖</a></p>
+      <h1>115 學年度</h1>
+      <p class="lead">點課名，打開那一課的心智圖。</p>
+    </div>
+    <button type="button" class="switch" id="teacherSwitch" aria-pressed="false"><i></i>老師工具</button>
+  </header>
+  <section class="shelf" id="c-6-1">
+    <details open>
+      <summary>
+        <span class="badge">六上</span>
+        <span class="stitle">國語課文心智圖<small>六年級上學期・12 課</small></span>
+        <span class="chev" aria-hidden="true"></span>
+      </summary>
+      <div class="tools teacher-only">
+        <a href="6-1/all.pdf" download>全冊 PDF</a>
+        <button type="button" data-qr="c-6-1" data-label="115 學年度 六上國語課文心智圖">學生掃 QR code</button>
+        <span class="src">課文出處：南一版</span>
+      </div>
+      <ol class="lessons">
+        <li>
+          <a class="lesson" href="6-1/01.html">
+            <span class="no" aria-hidden="true">1</span>
+            <span class="txt"><span class="name">在天晴了的時候</span><span class="sub">第一課　新詩｜戴望舒</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/01.png" download aria-label="第一課 PNG">PNG</a><a href="6-1/01.pdf" download aria-label="第一課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/02.html">
+            <span class="no" aria-hidden="true">2</span>
+            <span class="txt"><span class="name">珍珠鳥</span><span class="sub">第二課　散文｜馮驥才</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/02.png" download aria-label="第二課 PNG">PNG</a><a href="6-1/02.pdf" download aria-label="第二課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/03.html">
+            <span class="no" aria-hidden="true">3</span>
+            <span class="txt"><span class="name">客至</span><span class="sub">第三課　古典詩｜杜甫</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/03.png" download aria-label="第三課 PNG">PNG</a><a href="6-1/03.pdf" download aria-label="第三課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/04.html">
+            <span class="no" aria-hidden="true">4</span>
+            <span class="txt"><span class="name">贏得喝采的輸家</span><span class="sub">第四課　記敘文</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/04.png" download aria-label="第四課 PNG">PNG</a><a href="6-1/04.pdf" download aria-label="第四課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/05.html">
+            <span class="no" aria-hidden="true">5</span>
+            <span class="txt"><span class="name">哇！原來如此</span><span class="sub">第五課　說明文</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/05.png" download aria-label="第五課 PNG">PNG</a><a href="6-1/05.pdf" download aria-label="第五課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/06.html">
+            <span class="no" aria-hidden="true">6</span>
+            <span class="txt"><span class="name">登月先鋒</span><span class="sub">第六課　記敘文（人物傳記）</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/06.png" download aria-label="第六課 PNG">PNG</a><a href="6-1/06.pdf" download aria-label="第六課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/07.html">
+            <span class="no" aria-hidden="true">7</span>
+            <span class="txt"><span class="name">明智的抉擇</span><span class="sub">第七課　議論文｜王溢嘉</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/07.png" download aria-label="第七課 PNG">PNG</a><a href="6-1/07.pdf" download aria-label="第七課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/08.html">
+            <span class="no" aria-hidden="true">8</span>
+            <span class="txt"><span class="name">飢渴好「火」伴</span><span class="sub">第八課　小說（節選）｜蓋瑞‧伯森</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/08.png" download aria-label="第八課 PNG">PNG</a><a href="6-1/08.pdf" download aria-label="第八課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/09.html">
+            <span class="no" aria-hidden="true">9</span>
+            <span class="txt"><span class="name">火燒連環船</span><span class="sub">第九課　小說（節選）｜羅貫中</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/09.png" download aria-label="第九課 PNG">PNG</a><a href="6-1/09.pdf" download aria-label="第九課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/10.html">
+            <span class="no" aria-hidden="true">10</span>
+            <span class="txt"><span class="name">戲術</span><span class="sub">第十課　文言記敘文｜蒲松齡</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/10.png" download aria-label="第十課 PNG">PNG</a><a href="6-1/10.pdf" download aria-label="第十課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/11.html">
+            <span class="no" aria-hidden="true">11</span>
+            <span class="txt"><span class="name">紀念照</span><span class="sub">第十一課　記敘文（散文）｜向田邦子</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/11.png" download aria-label="第十一課 PNG">PNG</a><a href="6-1/11.pdf" download aria-label="第十一課 PDF">PDF</a></span>
+        </li>
+        <li>
+          <a class="lesson" href="6-1/12.html">
+            <span class="no" aria-hidden="true">12</span>
+            <span class="txt"><span class="name">少年筆耕</span><span class="sub">第十二課　小說（節選）｜亞米契斯</span></span>
+          </a>
+          <span class="dl teacher-only"><a href="6-1/12.png" download aria-label="第十二課 PNG">PNG</a><a href="6-1/12.pdf" download aria-label="第十二課 PDF">PDF</a></span>
+        </li>
+      </ol>
+    </details>
+  </section>
+  <footer>課文內容取自教科書，心智圖為教學整理，供課堂學習使用。</footer>
+</div>
+<dialog id="qr" aria-labelledby="qrLabel">
+  <img id="qrImg" alt="QR code">
+  <p id="qrLabel"></p>
+  <p id="qrUrl"></p>
+  <button type="button" id="qrClose">關閉</button>
+</dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+  // 老師工具預設關閉，學生只看到課名；老師打開一次後，這台裝置會記住
+  const sw = document.getElementById('teacherSwitch');
+  const setTeacher = (on) => {
+    document.body.classList.toggle('teacher', on);
+    sw.setAttribute('aria-pressed', String(on));
+    try { localStorage.setItem('mindmap:teacher', on ? '1' : '0'); } catch { /* 不能存就算了 */ }
+  };
+  let saved = false;
+  try { saved = localStorage.getItem('mindmap:teacher') === '1'; } catch { saved = false; }
+  setTeacher(saved || new URLSearchParams(location.search).get('teacher') === '1');
+  sw.addEventListener('click', () => setTeacher(!document.body.classList.contains('teacher')));
+
+  // 從心智圖按「目錄」回來時，打開並捲到那一冊
+  const target = location.hash && document.querySelector(location.hash);
+  if (target) { const d = target.querySelector('details'); if (d) d.open = true; target.scrollIntoView(); }
+
+  const dlg = document.getElementById('qr');
+  document.querySelectorAll('[data-qr]').forEach((b) => b.addEventListener('click', () => {
+    const url = location.origin + location.pathname + '#' + b.dataset.qr;
+    try {
+      const q = qrcode(0, 'M'); q.addData(url); q.make();
+      document.getElementById('qrImg').src = q.createDataURL(10, 2);
+    } catch { document.getElementById('qrImg').alt = 'QR code 載入失敗，請直接分享網址'; }
+    document.getElementById('qrLabel').textContent = b.dataset.label;
+    document.getElementById('qrUrl').textContent = url;
+    dlg.showModal();
+  }));
+  document.getElementById('qrClose').addEventListener('click', () => dlg.close());
+</script>
+</body>
+</html>

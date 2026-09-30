@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課文心智圖</title>
+<meta name="description" content="國小課文心智圖，依學年度整理。">
+<style>
+  :root { --bg: #FAF8F4; --card: #FFFFFF; --text: #1F2328; --muted: #62666D; --line: #E3DFD7; --accent: #243047;
+          --accent-text: #FFFFFF; --hover: #F3F0EA; --chip: #EFECE6; --focus: #2F6FDB; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #15171B; --card: #1E2228; --text: #ECEAE6; --muted: #A3A7AE; --line: #30353D;
+      --accent: #DCE6FF; --accent-text: #15171B; --hover: #262B33; --chip: #2A2F37; --focus: #8FB2FF; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5;
+         font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 16px 56px; }
+  header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .kicker { margin: 0; color: var(--muted); font-size: 15px; }
+  h1 { margin: 2px 0 4px; font-size: clamp(28px, 6vw, 38px); line-height: 1.2; }
+  .lead { margin: 0; color: var(--muted); font-size: 17px; }
+  .switch { flex: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--card);
+            color: var(--text); border-radius: 999px; padding: 7px 12px 7px 8px; font: inherit; font-size: 14px; cursor: pointer; }
+  .switch i { width: 34px; height: 20px; border-radius: 999px; background: var(--chip); position: relative; transition: background .15s; }
+  .switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+                     background: var(--muted); transition: transform .15s, background .15s; }
+  .switch[aria-pressed="true"] i { background: var(--accent); }
+  .switch[aria-pressed="true"] i::after { transform: translateX(14px); background: var(--accent-text); }
+  .teacher-only { display: none !important; }
+  body.teacher .teacher-only { display: flex !important; }
+
+  ul { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 12px; }
+  .year { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 22px; border-radius: 18px;
+           background: var(--card); border: 1px solid var(--line); text-decoration: none; }
+  .year:hover { background: var(--hover); }
+  .y { font-size: 24px; font-weight: 700; }
+  .c { color: var(--muted); }
+  footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>課文心智圖</h1>
+  <p class="lead">選學年度，再點課名打開心智圖。</p>
+  <ul>
+    <li><a class="year" href="115/index.html"><span class="y">115 學年度</span>
+      <span class="c">六上</span></a></li>
+  </ul>
+  <footer>課文內容取自教科書，心智圖為教學整理，供課堂學習使用。</footer>
+</div>
+</body>
+</html>
