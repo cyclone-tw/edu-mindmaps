@@ -2,7 +2,9 @@
 
 <!-- udl-family-block v1 -->
 > **UDL 教學家族**：本 repo 是課文互動心智圖（公開，過渡）；平台上線後再決定併入平台，或保留為公開的上課投影工具。
+>
 > 上游：教師本機的心智圖產生器（尚未收編進家族 repo）；下游：教室投影與學生裝置（GitHub Pages 網頁）。
+>
 > 家族地圖正本：`cyclone-tw/udl-learning` 的 `docs/family-map.md`（私人 repo）。要改本 repo 的角色或串接方式，先改地圖。
 <!-- /udl-family-block -->
 
